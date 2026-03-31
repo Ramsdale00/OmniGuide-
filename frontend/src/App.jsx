@@ -32,8 +32,6 @@ export default function App() {
     setActiveTab('chat')
   }
 
-  if (!user) return <LoginPage onLogin={handleLogin} />
-
   // ── Restore history on mount ──────────────────────────────────────────
   useEffect(() => {
     fetch(`${API_BASE}/history`)
@@ -115,6 +113,8 @@ export default function App() {
       setError('Failed to clear history')
     }
   }, [])
+
+  if (!user) return <LoginPage onLogin={handleLogin} />
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#FAF7F2', color: '#2A2825' }}>
