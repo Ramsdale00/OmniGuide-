@@ -1,0 +1,185 @@
+import { useState, useCallback, useEffect } from 'react'
+import ChatWindow from './components/ChatWindow.jsx'
+import StatusBadge from './components/StatusBadge.jsx'
+import ExportButton from './components/ExportButton.jsx'
+import { BookOpen, Trash2, Zap } from 'lucide-react'
+
+const API_BASE = ''  // Vite proxy handles /query, /history, etc.
+
+export default function App() {
+  const [messages, setMessages] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [llmStatus, setLlmStatus] = useState('unknown') // 'online' | 'fallback' | 'unknown'
+  const [error, setError] = useState(null)
+
+  // ── Restore history on mount ──────────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API_BASE}/history`)
+      .then(r => r.json())
+      .then(entries => {
+        if (entries.length > 0) {
+          const restored = entries.map(e => ({
+            id: crypto.randomUUID(),
+            type: 'exchange',
+            question: e.question,
+            answer: e.answer,
+            sources: e.sources || [],
+            fallback_flag: e.fallback_flag,
+            timestamp: e.timestamp,
+          }))
+          setMessages(restored)
+          const last = entries[entries.length - 1]
+          setLlmStatus(last.fallback_flag ? 'fallback' : 'online')
+        }
+      })
+      .catch(() => {}) // Silently ignore if backend not ready
+  }, [])
+
+  // ── Submit query ──────────────────────────────────────────────────────
+  const handleSubmit = useCallback(async (query) => {
+    if (!query.trim() || isLoading) return
+
+    const userMsgId = crypto.randomUUID()
+
+    // Optimistically add user message
+    setMessages(prev => [
+      ...prev,
+      { id: userMsgId, type: 'user', content: query },
+    ])
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`${API_BASE}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_query: query }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'Unknown error' }))
+        throw new Error(err.detail || `HTTP ${res.status}`)
+      }
+
+      const data = await res.json()
+
+      setMessages(prev => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          type: 'exchange',
+          question: query,
+          answer: data.answer,
+          sources: data.sources || [],
+          fallback_flag: data.fallback_flag,
+          timestamp: data.timestamp,
+        },
+      ])
+      setLlmStatus(data.fallback_flag ? 'fallback' : 'online')
+
+    } catch (err) {
+      setError(err.message)
+      setMessages(prev => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          type: 'error',
+          content: `Error: ${err.message}`,
+        },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isLoading])
+
+  // ── Clear history ─────────────────────────────────────────────────────
+  const handleClear = useCallback(async () => {
+    try {
+      await fetch(`${API_BASE}/clear-history`, { method: 'POST' })
+      setMessages([])
+      setLlmStatus('unknown')
+      setError(null)
+    } catch {
+      setError('Failed to clear history')
+    }
+  }, [])
+
+  return (
+    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden">
+
+      {/* ── Sidebar ──────────────────────────────────────────────────── */}
+      <aside className="w-64 flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col">
+
+        {/* Logo / Title */}
+        <div className="p-5 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <BookOpen size={18} className="text-white" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm leading-tight">OmniGuide</h1>
+              <p className="text-xs text-slate-400 leading-tight">LOBP Document Assistant</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Status */}
+        <div className="p-4 border-b border-slate-800">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">LLM Status</p>
+          <StatusBadge status={llmStatus} />
+        </div>
+
+        {/* Info */}
+        <div className="p-4 border-b border-slate-800">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Knowledge Base</p>
+          <div className="space-y-1">
+            {[
+              { id: 'D0', label: 'RAG Test Guide' },
+              { id: 'D1', label: 'Batch Manufacturing' },
+              { id: 'D2', label: 'SCADA / OPC-UA' },
+              { id: 'D3', label: 'Cybersecurity (IEC 62443)' },
+              { id: 'D4', label: 'Process Maps' },
+              { id: 'D5', label: 'QC Procedures' },
+              { id: 'D6', label: 'LIMS Spec' },
+            ].map(doc => (
+              <div key={doc.id} className="flex items-center gap-2 text-xs text-slate-400">
+                <span className="text-blue-400 font-mono font-semibold w-6">{doc.id}</span>
+                <span className="truncate">{doc.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Actions */}
+        <div className="p-4 space-y-2 border-t border-slate-800">
+          <ExportButton />
+          <button
+            onClick={handleClear}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <Trash2 size={15} />
+            Clear History
+          </button>
+        </div>
+
+        {/* Powered by */}
+        <div className="px-4 pb-4 flex items-center gap-1.5 text-xs text-slate-600">
+          <Zap size={11} />
+          <span>Powered by llama3.2 via Ollama</span>
+        </div>
+      </aside>
+
+      {/* ── Main chat area ─────────────────────────────────────────── */}
+      <main className="flex-1 flex flex-col min-w-0">
+        <ChatWindow
+          messages={messages}
+          isLoading={isLoading}
+          onSubmit={handleSubmit}
+        />
+      </main>
+    </div>
+  )
+}
