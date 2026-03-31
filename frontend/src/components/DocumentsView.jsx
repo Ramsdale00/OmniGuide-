@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileText, ChevronDown, ChevronUp, BookOpen, Layers, AlignLeft, Hash } from 'lucide-react'
+import { FileText, ChevronDown, ChevronUp, BookOpen, Layers, AlignLeft, Hash, ArrowLeft } from 'lucide-react'
 
 const DOC_COLORS = {
   D0: { accent: '#7C3AED', bg: '#F5F3FF', border: '#DDD6FE' },
@@ -120,7 +120,7 @@ function SectionBlock({ section, docId }) {
   )
 }
 
-export default function DocumentsView() {
+export default function DocumentsView({ onBack }) {
   const [docs, setDocs] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [docContent, setDocContent] = useState(null)
@@ -172,6 +172,28 @@ export default function DocumentsView() {
         style={{ borderColor: '#DDD9D1', background: '#F9F7F0' }}
       >
         <div className="p-4 border-b sticky top-0 z-10" style={{ borderColor: '#DDD9D1', background: '#F9F7F0' }}>
+          <div className="flex items-center gap-2 mb-2">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="flex items-center gap-1.5 text-xs rounded-lg px-2 py-1 transition-colors border"
+                style={{ color: '#7A7874', background: '#FFFFFF', borderColor: '#DDD9D1' }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = '#2A2825'
+                  e.currentTarget.style.background = '#EDE9E2'
+                  e.currentTarget.style.borderColor = '#C5C1B9'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = '#7A7874'
+                  e.currentTarget.style.background = '#FFFFFF'
+                  e.currentTarget.style.borderColor = '#DDD9D1'
+                }}
+              >
+                <ArrowLeft size={12} />
+                Back to Chat
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <BookOpen size={15} style={{ color: '#7A7874' }} />
             <h2 className="text-sm font-semibold" style={{ color: '#2A2825' }}>Knowledge Base</h2>

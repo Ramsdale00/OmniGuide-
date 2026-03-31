@@ -219,7 +219,7 @@ export default function App() {
             onSubmit={handleSubmit}
           />
         ) : (
-          <DocumentsView />
+          <DocumentsView onBack={() => setActiveTab('chat')} />
         )}
       </main>
     </div>
