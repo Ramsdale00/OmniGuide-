@@ -105,33 +105,36 @@ export default function App() {
   }, [])
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#FAF7F2', color: '#2A2825' }}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="w-64 flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col">
+      <aside
+        className="w-64 flex-shrink-0 flex flex-col border-r"
+        style={{ background: '#F9F7F0', borderColor: '#DDD9D1' }}
+      >
 
         {/* Logo / Title */}
-        <div className="p-5 border-b border-slate-800">
+        <div className="p-5 border-b" style={{ borderColor: '#DDD9D1' }}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
               <BookOpen size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-sm leading-tight">OmniGuide</h1>
-              <p className="text-xs text-slate-400 leading-tight">LOBP Document Assistant</p>
+              <h1 className="font-bold text-sm leading-tight" style={{ color: '#2A2825' }}>OmniGuide</h1>
+              <p className="text-xs leading-tight" style={{ color: '#8A8784' }}>LOBP Document Assistant</p>
             </div>
           </div>
         </div>
 
         {/* Status */}
-        <div className="p-4 border-b border-slate-800">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">LLM Status</p>
+        <div className="p-4 border-b" style={{ borderColor: '#DDD9D1' }}>
+          <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#9A9894' }}>LLM Status</p>
           <StatusBadge status={llmStatus} />
         </div>
 
-        {/* Info */}
-        <div className="p-4 border-b border-slate-800">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Knowledge Base</p>
+        {/* Knowledge Base */}
+        <div className="p-4 border-b" style={{ borderColor: '#DDD9D1' }}>
+          <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#9A9894' }}>Knowledge Base</p>
           <div className="space-y-1">
             {[
               { id: 'D0', label: 'RAG Test Guide' },
@@ -142,8 +145,8 @@ export default function App() {
               { id: 'D5', label: 'QC Procedures' },
               { id: 'D6', label: 'LIMS Spec' },
             ].map(doc => (
-              <div key={doc.id} className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="text-blue-400 font-mono font-semibold w-6">{doc.id}</span>
+              <div key={doc.id} className="flex items-center gap-2 text-xs" style={{ color: '#7A7874' }}>
+                <span className="font-mono font-semibold w-6 text-blue-600">{doc.id}</span>
                 <span className="truncate">{doc.label}</span>
               </div>
             ))}
@@ -154,11 +157,14 @@ export default function App() {
         <div className="flex-1" />
 
         {/* Actions */}
-        <div className="p-4 space-y-2 border-t border-slate-800">
+        <div className="p-4 space-y-2 border-t" style={{ borderColor: '#DDD9D1' }}>
           <ExportButton />
           <button
             onClick={handleClear}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors hover:text-red-500"
+            style={{ color: '#7A7874' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#EDE9E2'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <Trash2 size={15} />
             Clear History
@@ -166,9 +172,9 @@ export default function App() {
         </div>
 
         {/* Powered by */}
-        <div className="px-4 pb-4 flex items-center gap-1.5 text-xs text-slate-600">
+        <div className="px-4 pb-4 flex items-center gap-1.5 text-xs" style={{ color: '#B5B3B0' }}>
           <Zap size={11} />
-          <span>Powered by llama3.2 via Ollama</span>
+          <span>Powered by Ollama</span>
         </div>
       </aside>
 

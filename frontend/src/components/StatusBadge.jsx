@@ -5,29 +5,29 @@
 export default function StatusBadge({ status }) {
   const configs = {
     online: {
-      dot: 'bg-emerald-400 shadow-emerald-400/50',
+      dot: 'bg-emerald-500',
       label: 'LLM Active',
-      text: 'text-emerald-400',
-      bg: 'bg-emerald-400/10 border border-emerald-400/20',
+      style: { color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0' },
     },
     fallback: {
-      dot: 'bg-amber-400 shadow-amber-400/50',
+      dot: 'bg-amber-400',
       label: 'Fallback Mode',
-      text: 'text-amber-400',
-      bg: 'bg-amber-400/10 border border-amber-400/20',
+      style: { color: '#B45309', background: '#FFFBEB', border: '1px solid #FCD34D' },
     },
     unknown: {
-      dot: 'bg-slate-500',
+      dot: 'bg-stone-400',
       label: 'Connecting...',
-      text: 'text-slate-400',
-      bg: 'bg-slate-700/40 border border-slate-700',
+      style: { color: '#7A7874', background: '#EDE9E2', border: '1px solid #DDD9D1' },
     },
   }
 
   const cfg = configs[status] || configs.unknown
 
   return (
-    <div className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium ${cfg.bg} ${cfg.text}`}>
+    <div
+      className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium"
+      style={cfg.style}
+    >
       <span className={`w-2 h-2 rounded-full ${cfg.dot} shadow-sm`} />
       {cfg.label}
     </div>

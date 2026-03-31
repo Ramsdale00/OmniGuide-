@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth scrollbar */
+/* Smooth scrollbar — light warm tone */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -10,8 +10,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #C5C1B9;
   border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A5A19A;
 }
 
 /* Typing cursor animation */
@@ -23,7 +26,7 @@
   animation: blink 1s step-end infinite;
 }
 
-/* Shimmer skeleton */
+/* Shimmer skeleton — light warm palette */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -31,9 +34,9 @@
 .shimmer {
   background: linear-gradient(
     90deg,
-    #1e293b 25%,
-    #334155 50%,
-    #1e293b 75%
+    #EDE9E2 25%,
+    #F9F7F0 50%,
+    #EDE9E2 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -45,9 +48,10 @@
 .answer-prose ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.5rem; }
 .answer-prose ol { list-style: decimal; padding-left: 1.25rem; margin-bottom: 0.5rem; }
 .answer-prose li { margin-bottom: 0.25rem; }
-.answer-prose strong { font-weight: 600; }
+.answer-prose strong { font-weight: 600; color: #1A3A5C; }
 .answer-prose code {
-  background: rgba(99,102,241,0.15);
+  background: #EAF0FB;
+  color: #2C5FAD;
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   font-size: 0.85em;

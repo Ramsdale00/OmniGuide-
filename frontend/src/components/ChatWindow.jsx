@@ -39,7 +39,7 @@ export default function ChatWindow({ messages, isLoading, onSubmit }) {
   const isEmpty = messages.length === 0 && !isLoading
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ background: '#FAF7F2' }}>
 
       {/* ── Message list ─────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto py-4 space-y-1">
@@ -47,11 +47,16 @@ export default function ChatWindow({ messages, isLoading, onSubmit }) {
         {/* Empty state */}
         {isEmpty && (
           <div className="flex flex-col items-center justify-center h-full px-8 text-center">
-            <div className="w-16 h-16 bg-blue-600/15 border border-blue-500/20 rounded-2xl flex items-center justify-center mb-4">
-              <FlaskConical size={28} className="text-blue-400" />
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 border"
+              style={{ background: '#EAF0FB', borderColor: '#BFCFEE' }}
+            >
+              <FlaskConical size={28} className="text-blue-500" />
             </div>
-            <h2 className="text-lg font-semibold text-slate-200 mb-1">LOBP Document Assistant</h2>
-            <p className="text-sm text-slate-500 mb-8 max-w-md">
+            <h2 className="text-lg font-semibold mb-1" style={{ color: '#2A2825' }}>
+              LOBP Document Assistant
+            </h2>
+            <p className="text-sm mb-8 max-w-md" style={{ color: '#9A9894' }}>
               Ask questions about operations, maintenance, safety, QC procedures, SCADA architecture, or any topic covered in the knowledge base documents.
             </p>
 
@@ -61,7 +66,22 @@ export default function ChatWindow({ messages, isLoading, onSubmit }) {
                 <button
                   key={i}
                   onClick={() => handleExampleClick(q)}
-                  className="text-left text-xs text-slate-400 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 hover:border-slate-600 rounded-xl px-3 py-2.5 transition-all hover:text-slate-200 leading-snug"
+                  className="text-left text-xs rounded-xl px-3 py-2.5 transition-all leading-snug border"
+                  style={{
+                    color: '#6A6865',
+                    background: '#F9F7F0',
+                    borderColor: '#DDD9D1',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#EDE9E2'
+                    e.currentTarget.style.color = '#3A3835'
+                    e.currentTarget.style.borderColor = '#C5C1B9'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#F9F7F0'
+                    e.currentTarget.style.color = '#6A6865'
+                    e.currentTarget.style.borderColor = '#DDD9D1'
+                  }}
                 >
                   {q}
                 </button>
@@ -82,7 +102,10 @@ export default function ChatWindow({ messages, isLoading, onSubmit }) {
       </div>
 
       {/* ── Input bar ────────────────────────────────────────────── */}
-      <div className="border-t border-slate-800 bg-slate-900/80 backdrop-blur-sm p-4">
+      <div
+        className="border-t p-4 backdrop-blur-sm"
+        style={{ borderColor: '#DDD9D1', background: 'rgba(249,247,240,0.92)' }}
+      >
         <form onSubmit={handleSubmit} className="flex gap-3 items-end">
           <textarea
             ref={inputRef}
@@ -97,18 +120,35 @@ export default function ChatWindow({ messages, isLoading, onSubmit }) {
             placeholder="Ask about operations, maintenance, QC procedures, SCADA, cybersecurity..."
             rows={1}
             disabled={isLoading}
-            className="flex-1 bg-slate-800 border border-slate-700 focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 resize-none outline-none transition-colors disabled:opacity-50 min-h-[44px] max-h-[120px]"
-            style={{ fieldSizing: 'content' }}
+            className="flex-1 rounded-xl px-4 py-3 text-sm resize-none outline-none transition-colors disabled:opacity-50 min-h-[44px] max-h-[120px] border"
+            style={{
+              background: '#FFFFFF',
+              borderColor: '#DDD9D1',
+              color: '#2A2825',
+              fieldSizing: 'content',
+            }}
+            onFocus={e => {
+              e.currentTarget.style.borderColor = '#93AADE'
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(147,170,222,0.18)'
+            }}
+            onBlur={e => {
+              e.currentTarget.style.borderColor = '#DDD9D1'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
           />
           <button
             type="submit"
             disabled={!inputValue.trim() || isLoading}
-            className="w-11 h-11 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-11 h-11 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
+            style={(!inputValue.trim() || isLoading)
+              ? { background: '#C5C1B9', color: '#8A8784', cursor: 'not-allowed' }
+              : { background: '#2563EB' }
+            }
           >
             <Send size={16} />
           </button>
         </form>
-        <p className="text-xs text-slate-600 mt-2 text-center">
+        <p className="text-xs mt-2 text-center" style={{ color: '#B5B3B0' }}>
           Shift+Enter for new line · Enter to send
         </p>
       </div>
