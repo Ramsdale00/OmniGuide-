@@ -1,0 +1,46 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OmniGuide RAG Document Assistant
+#
+# Prerequisites (on the host machine):
+#   1. Install Ollama: https://ollama.com
+#   2. Pull the model: ollama pull llama3.2
+#   3. Ensure Ollama is running: ollama serve
+#
+# Usage:
+#   docker compose up --build
+#
+# The backend will automatically run ingest.py on first start.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data   # persist FAISS + BM25 index between restarts
+    environment:
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Linux host resolution
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
