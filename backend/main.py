@@ -38,6 +38,13 @@ async def lifespan(app: FastAPI):
     global retriever
     try:
         retriever = Retriever()
+        # Validate FAISS index and chunks.json are in sync
+        if retriever.index.ntotal != len(retriever.chunks):
+            raise RuntimeError(
+                f"Index out of sync: FAISS has {retriever.index.ntotal} vectors "
+                f"but chunks.json has {len(retriever.chunks)} entries. "
+                "Re-run `python ingest.py`."
+            )
         print("✅ Retriever ready.")
     except FileNotFoundError as exc:
         print(f"⚠️  {exc}")

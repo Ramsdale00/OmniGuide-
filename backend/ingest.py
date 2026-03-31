@@ -40,12 +40,20 @@ def tokenize(text: str) -> list[str]:
 
 def main():
     # ── 1. Find all DOCX files ────────────────────────────────────────────
-    docx_paths = sorted(DOCS_DIR.glob("D*.docx"))
+    # D0 is the RAG test questions guide — it contains expected answers and must
+    # be EXCLUDED from the knowledge base to prevent data contamination.
+    all_docx = sorted(DOCS_DIR.glob("D*.docx"))
+    docx_paths = [p for p in all_docx if not p.name.startswith("D0")]
+
     if not docx_paths:
-        print(f"ERROR: No D*.docx files found in {DOCS_DIR}")
+        print(f"ERROR: No D1–D6 *.docx files found in {DOCS_DIR}")
         sys.exit(1)
 
-    print(f"Found {len(docx_paths)} document(s):")
+    skipped = [p.name for p in all_docx if p.name.startswith("D0")]
+    if skipped:
+        print(f"Skipping (test guide, not knowledge base): {skipped}")
+
+    print(f"Found {len(docx_paths)} knowledge document(s):")
     for p in docx_paths:
         print(f"  • {p.name}")
 
