@@ -128,18 +128,22 @@ export default function DocumentsView() {
   const [loadingDoc, setLoadingDoc] = useState(false)
   const [error, setError] = useState(null)
 
+  const parseJsonOrThrow = async (r) => {
+    const ct = r.headers.get('content-type') || ''
+    if (!ct.includes('application/json')) {
+      throw new Error('Backend unreachable — start the server and run ingest.py first.')
+    }
+    const data = await r.json()
+    if (!r.ok) throw new Error(data.detail || `HTTP ${r.status}`)
+    return data
+  }
+
   // Load document list on mount
   useEffect(() => {
     setLoadingList(true)
-    fetch('/documents')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
-      .then(data => {
-        setDocs(data)
-        setError(null)
-      })
+    fetch('/api/documents')
+      .then(parseJsonOrThrow)
+      .then(data => { setDocs(data); setError(null) })
       .catch(err => setError(err.message))
       .finally(() => setLoadingList(false))
   }, [])
@@ -150,11 +154,8 @@ export default function DocumentsView() {
     setSelectedId(docId)
     setDocContent(null)
     setLoadingDoc(true)
-    fetch(`/documents/${docId}`)
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`)
-        return r.json()
-      })
+    fetch(`/api/documents/${docId}`)
+      .then(parseJsonOrThrow)
       .then(data => setDocContent(data))
       .catch(err => setError(err.message))
       .finally(() => setLoadingDoc(false))

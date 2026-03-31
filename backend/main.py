@@ -225,7 +225,7 @@ async def health():
 
 # ── Document viewer endpoints ─────────────────────────────────────────────
 
-@app.get("/documents")
+@app.get("/api/documents")
 async def list_documents():
     """
     Return metadata for every document in the knowledge base.
@@ -256,7 +256,7 @@ async def list_documents():
     return list(docs.values())
 
 
-@app.get("/documents/{doc_id}")
+@app.get("/api/documents/{doc_id}")
 async def get_document(doc_id: str):
     """
     Return all chunks for a specific document, grouped by section.
