@@ -221,3 +221,68 @@ async def health():
         "index_loaded": retriever is not None,
         "chunks": len(retriever.chunks) if retriever else 0,
     }
+
+
+# ── Document viewer endpoints ─────────────────────────────────────────────
+
+@app.get("/documents")
+async def list_documents():
+    """
+    Return metadata for every document in the knowledge base.
+    Derived from the loaded chunks; each entry includes doc_id, title,
+    total chunk count, and a list of unique section names in order.
+    """
+    if retriever is None:
+        raise HTTPException(status_code=503, detail="Index not loaded.")
+
+    # Aggregate per doc_id preserving insertion order
+    docs: dict[str, dict] = {}
+    for chunk in retriever.chunks:
+        did = chunk["doc_id"]
+        if did not in docs:
+            docs[did] = {
+                "doc_id": did,
+                "title": chunk["title"],
+                "chunk_count": 0,
+                "sections": [],
+                "char_total": 0,
+            }
+        docs[did]["chunk_count"] += 1
+        docs[did]["char_total"] += chunk.get("char_count", len(chunk["content"]))
+        sec = chunk["section"]
+        if sec not in docs[did]["sections"]:
+            docs[did]["sections"].append(sec)
+
+    return list(docs.values())
+
+
+@app.get("/documents/{doc_id}")
+async def get_document(doc_id: str):
+    """
+    Return all chunks for a specific document, grouped by section.
+    Response: { doc_id, title, sections: [{ name, chunks: [{ id, content, char_count }] }] }
+    """
+    if retriever is None:
+        raise HTTPException(status_code=503, detail="Index not loaded.")
+
+    doc_chunks = [c for c in retriever.chunks if c["doc_id"].upper() == doc_id.upper()]
+    if not doc_chunks:
+        raise HTTPException(status_code=404, detail=f"Document '{doc_id}' not found.")
+
+    title = doc_chunks[0]["title"]
+    sections: dict[str, list] = {}
+    for chunk in doc_chunks:
+        sec = chunk["section"]
+        if sec not in sections:
+            sections[sec] = []
+        sections[sec].append({
+            "id": chunk["id"],
+            "content": chunk["content"],
+            "char_count": chunk.get("char_count", len(chunk["content"])),
+        })
+
+    return {
+        "doc_id": doc_id.upper(),
+        "title": title,
+        "sections": [{"name": sec, "chunks": chunks} for sec, chunks in sections.items()],
+    }

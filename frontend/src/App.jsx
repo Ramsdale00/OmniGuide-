@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react'
 import ChatWindow from './components/ChatWindow.jsx'
+import DocumentsView from './components/DocumentsView.jsx'
 import StatusBadge from './components/StatusBadge.jsx'
 import ExportButton from './components/ExportButton.jsx'
-import { BookOpen, Trash2, Zap } from 'lucide-react'
+import { BookOpen, Trash2, Zap, MessageSquare, Library } from 'lucide-react'
 
 const API_BASE = ''  // Vite proxy handles /query, /history, etc.
 
@@ -11,6 +12,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [llmStatus, setLlmStatus] = useState('unknown') // 'online' | 'fallback' | 'unknown'
   const [error, setError] = useState(null)
+  const [activeTab, setActiveTab] = useState('chat') // 'chat' | 'documents'
 
   // ── Restore history on mount ──────────────────────────────────────────
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function App() {
           setLlmStatus(last.fallback_flag ? 'fallback' : 'online')
         }
       })
-      .catch(() => {}) // Silently ignore if backend not ready
+      .catch(() => {})
   }, [])
 
   // ── Submit query ──────────────────────────────────────────────────────
@@ -40,12 +42,7 @@ export default function App() {
     if (!query.trim() || isLoading) return
 
     const userMsgId = crypto.randomUUID()
-
-    // Optimistically add user message
-    setMessages(prev => [
-      ...prev,
-      { id: userMsgId, type: 'user', content: query },
-    ])
+    setMessages(prev => [...prev, { id: userMsgId, type: 'user', content: query }])
     setIsLoading(true)
     setError(null)
 
@@ -62,7 +59,6 @@ export default function App() {
       }
 
       const data = await res.json()
-
       setMessages(prev => [
         ...prev,
         {
@@ -81,11 +77,7 @@ export default function App() {
       setError(err.message)
       setMessages(prev => [
         ...prev,
-        {
-          id: crypto.randomUUID(),
-          type: 'error',
-          content: `Error: ${err.message}`,
-        },
+        { id: crypto.randomUUID(), type: 'error', content: `Error: ${err.message}` },
       ])
     } finally {
       setIsLoading(false)
@@ -126,13 +118,40 @@ export default function App() {
           </div>
         </div>
 
+        {/* Tab navigation */}
+        <div className="p-3 border-b" style={{ borderColor: '#DDD9D1' }}>
+          <div
+            className="flex rounded-lg p-0.5"
+            style={{ background: '#EDE9E2' }}
+          >
+            {[
+              { id: 'chat', label: 'Chat', icon: MessageSquare },
+              { id: 'documents', label: 'Documents', icon: Library },
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium transition-all"
+                style={
+                  activeTab === id
+                    ? { background: '#FFFFFF', color: '#2A2825', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
+                    : { background: 'transparent', color: '#7A7874' }
+                }
+              >
+                <Icon size={13} />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Status */}
         <div className="p-4 border-b" style={{ borderColor: '#DDD9D1' }}>
           <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#9A9894' }}>LLM Status</p>
           <StatusBadge status={llmStatus} />
         </div>
 
-        {/* Knowledge Base */}
+        {/* Knowledge Base list */}
         <div className="p-4 border-b" style={{ borderColor: '#DDD9D1' }}>
           <p className="text-xs uppercase tracking-wider mb-2" style={{ color: '#9A9894' }}>Knowledge Base</p>
           <div className="space-y-1">
@@ -145,10 +164,17 @@ export default function App() {
               { id: 'D5', label: 'QC Procedures' },
               { id: 'D6', label: 'LIMS Spec' },
             ].map(doc => (
-              <div key={doc.id} className="flex items-center gap-2 text-xs" style={{ color: '#7A7874' }}>
+              <button
+                key={doc.id}
+                onClick={() => setActiveTab('documents')}
+                className="w-full flex items-center gap-2 text-xs rounded-md px-1 py-0.5 transition-colors text-left"
+                style={{ color: '#7A7874' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#2A2825'}
+                onMouseLeave={e => e.currentTarget.style.color = '#7A7874'}
+              >
                 <span className="font-mono font-semibold w-6 text-blue-600">{doc.id}</span>
                 <span className="truncate">{doc.label}</span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -161,10 +187,16 @@ export default function App() {
           <ExportButton />
           <button
             onClick={handleClear}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors hover:text-red-500"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors"
             style={{ color: '#7A7874' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#EDE9E2'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = '#DC2626'
+              e.currentTarget.style.background = '#FFF5F5'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = '#7A7874'
+              e.currentTarget.style.background = 'transparent'
+            }}
           >
             <Trash2 size={15} />
             Clear History
@@ -178,13 +210,17 @@ export default function App() {
         </div>
       </aside>
 
-      {/* ── Main chat area ─────────────────────────────────────────── */}
+      {/* ── Main area ──────────────────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0">
-        <ChatWindow
-          messages={messages}
-          isLoading={isLoading}
-          onSubmit={handleSubmit}
-        />
+        {activeTab === 'chat' ? (
+          <ChatWindow
+            messages={messages}
+            isLoading={isLoading}
+            onSubmit={handleSubmit}
+          />
+        ) : (
+          <DocumentsView />
+        )}
       </main>
     </div>
   )
