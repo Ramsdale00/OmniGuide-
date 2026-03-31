@@ -3,16 +3,36 @@ import ChatWindow from './components/ChatWindow.jsx'
 import DocumentsView from './components/DocumentsView.jsx'
 import StatusBadge from './components/StatusBadge.jsx'
 import ExportButton from './components/ExportButton.jsx'
-import { BookOpen, Trash2, Zap, MessageSquare, Library } from 'lucide-react'
+import LoginPage from './components/LoginPage.jsx'
+import { BookOpen, Trash2, Zap, MessageSquare, Library, LogOut } from 'lucide-react'
 
 const API_BASE = ''  // Vite proxy handles /query, /history, etc.
 
 export default function App() {
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('og_user')) || null } catch { return null }
+  })
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [llmStatus, setLlmStatus] = useState('unknown') // 'online' | 'fallback' | 'unknown'
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('chat') // 'chat' | 'documents'
+
+  const handleLogin = (userInfo) => {
+    sessionStorage.setItem('og_user', JSON.stringify(userInfo))
+    setUser(userInfo)
+  }
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('og_user')
+    setUser(null)
+    setMessages([])
+    setLlmStatus('unknown')
+    setError(null)
+    setActiveTab('chat')
+  }
+
+  if (!user) return <LoginPage onLogin={handleLogin} />
 
   // ── Restore history on mount ──────────────────────────────────────────
   useEffect(() => {
@@ -203,6 +223,28 @@ export default function App() {
           </button>
         </div>
 
+        {/* Logged-in user + logout */}
+        <div className="px-4 pb-3 pt-1">
+          <div
+            className="flex items-center justify-between rounded-xl px-3 py-2 border"
+            style={{ background: '#F9F7F0', borderColor: '#DDD9D1' }}
+          >
+            <span className="text-xs truncate" style={{ color: '#5A5855' }} title={user.email}>
+              {user.email}
+            </span>
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              className="ml-2 flex-shrink-0 p-1 rounded-lg transition-colors"
+              style={{ color: '#9A9894' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#DC2626'; e.currentTarget.style.background = '#FFF5F5' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#9A9894'; e.currentTarget.style.background = 'transparent' }}
+            >
+              <LogOut size={13} />
+            </button>
+          </div>
+        </div>
+
         {/* Powered by */}
         <div className="px-4 pb-4 flex items-center gap-1.5 text-xs" style={{ color: '#B5B3B0' }}>
           <Zap size={11} />
@@ -219,7 +261,7 @@ export default function App() {
             onSubmit={handleSubmit}
           />
         ) : (
-          <DocumentsView />
+          <DocumentsView onBack={() => setActiveTab('chat')} />
         )}
       </main>
     </div>
