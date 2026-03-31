@@ -40,7 +40,16 @@ export default function ExportButton() {
     <button
       onClick={handleExport}
       disabled={loading}
-      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
+      className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors disabled:opacity-50"
+      style={{ color: '#7A7874' }}
+      onMouseEnter={e => {
+        e.currentTarget.style.color = '#2C5FAD'
+        e.currentTarget.style.background = '#EDE9E2'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.color = '#7A7874'
+        e.currentTarget.style.background = 'transparent'
+      }}
     >
       {loading
         ? <Loader2 size={15} className="animate-spin" />
