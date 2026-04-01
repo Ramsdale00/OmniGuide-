@@ -42,15 +42,19 @@ jobs:
 
       # ---------------- DEPLOY ----------------
       - name: Deploy to Server
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: GHCR_TOKEN,GHCR_USERNAME
           script: |
             set -e
 
-            USER=$(echo "${{ secrets.GHCR_USERNAME }}" | tr '[:upper:]' '[:lower:]')
+            USER=$(echo "$GHCR_USERNAME" | tr '[:upper:]' '[:lower:]')
 
             BACKEND_IMAGE=ghcr.io/$USER/omniguide-backend:latest
             FRONTEND_IMAGE=ghcr.io/$USER/omniguide-frontend:latest
@@ -58,7 +62,7 @@ jobs:
             APP_DIR=~/omniguide
 
             echo "Login to GHCR"
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
             echo "Create app directory"
             mkdir -p $APP_DIR
