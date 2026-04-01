@@ -19,8 +19,11 @@ jobs:
 
       # ---------------- GHCR LOGIN ----------------
       - name: Login to GHCR
-        run: |
-          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       # ---------------- BUILD & PUSH BACKEND ----------------
       - name: Build and Push Backend Image
@@ -62,7 +65,7 @@ jobs:
             APP_DIR=~/omniguide
 
             echo "Login to GHCR"
-            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            docker login ghcr.io -u "$GHCR_USERNAME" -p "$GHCR_TOKEN"
 
             echo "Create app directory"
             mkdir -p $APP_DIR
