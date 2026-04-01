@@ -28,7 +28,11 @@ from rag.chunker import chunk_documents
 from rag.embeddings import encode
 
 # ── Paths ─────────────────────────────────────────────────────────────────
-REPO_ROOT = Path(__file__).parent.parent          # OmniGuide- root
+# Check if we're running in Docker (where repo is at /repo) or locally
+if Path("/repo").exists():
+    REPO_ROOT = Path("/repo")                      # Docker: DOCX files at /repo
+else:
+    REPO_ROOT = Path(__file__).parent.parent       # Local: OmniGuide- root
 DOCS_DIR = REPO_ROOT                               # DOCX files live at root
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
