@@ -8,6 +8,20 @@ import { BookOpen, Trash2, Zap, MessageSquare, Library, LogOut } from 'lucide-re
 
 const API_BASE = ''  // Vite proxy handles /query, /history, etc.
 
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return generateUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r =
+      typeof crypto !== 'undefined' && crypto.getRandomValues
+        ? crypto.getRandomValues(new Uint8Array(1))[0] % 16
+        : Math.floor(Math.random() * 16);
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function App() {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('og_user')) || null } catch { return null }
@@ -39,7 +53,7 @@ export default function App() {
       .then(entries => {
         if (entries.length > 0) {
           const restored = entries.map(e => ({
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             type: 'exchange',
             question: e.question,
             answer: e.answer,
@@ -59,7 +73,7 @@ export default function App() {
   const handleSubmit = useCallback(async (query) => {
     if (!query.trim() || isLoading) return
 
-    const userMsgId = crypto.randomUUID()
+    const userMsgId = generateUUID()
     setMessages(prev => [...prev, { id: userMsgId, type: 'user', content: query }])
     setIsLoading(true)
     setError(null)
@@ -80,7 +94,7 @@ export default function App() {
       setMessages(prev => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           type: 'exchange',
           question: query,
           answer: data.answer,
@@ -95,7 +109,7 @@ export default function App() {
       setError(err.message)
       setMessages(prev => [
         ...prev,
-        { id: crypto.randomUUID(), type: 'error', content: `Error: ${err.message}` },
+        { id: generateUUID(), type: 'error', content: `Error: ${err.message}` },
       ])
     } finally {
       setIsLoading(false)
